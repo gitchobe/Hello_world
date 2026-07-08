@@ -15,12 +15,15 @@
 
     <div class="w-full max-w-md bg-zinc-800 border-4 border-zinc-700 rounded-3xl shadow-2xl overflow-hidden flex flex-col">
         
+        <!-- 상단 헤더 -->
         <div class="bg-red-600 text-white text-center py-2 text-xl tracking-wider border-b-4 border-zinc-700 shadow-inner">
             POKÉMON BATTLE
         </div>
 
+        <!-- 배틀 필드 화면 -->
         <div class="relative bg-gradient-to-b from-cyan-200 to-emerald-200 p-6 flex flex-col justify-between h-72 border-b-4 border-zinc-700">
             
+            <!-- 적 포켓몬 (파이리) 구역 -->
             <div class="flex justify-between items-start">
                 <div class="bg-white/80 backdrop-blur-sm rounded-xl p-2 border-2 border-zinc-600 w-44 shadow-sm">
                     <div class="flex justify-between font-bold text-sm text-zinc-800">
@@ -34,11 +37,24 @@
                         HP: <span id="enemy-hp">50</span>/50
                     </div>
                 </div>
-                <div id="enemy-sprite" class="text-6xl pt-2 transition-transform duration-200">🔥</div>
+                <!-- 적 그래픽 대용 텍스트/이모지 캐릭터 -->
+                <div id="enemy-sprite" class="text-6xl pt-2 transition-transform duration-200">
+                   <span class="pixelated-icon">
+                    <span style="color: #FF9800;">🧡</span>
+                    <span style="color: #FF5722;">🔥</span>
+                   </span>
+                </div>
             </div>
 
+            <!-- 플레이어 포켓몬 (피카츄) 구역 -->
             <div class="flex justify-between items-end">
-                <div id="player-sprite" class="text-6xl pb-2 transition-transform duration-200">⚡</div>
+                <!-- 플레이어 그래픽 대용 텍스트/이모지 캐릭터 -->
+                <div id="player-sprite" class="text-6xl pb-2 transition-transform duration-200">
+                   <span class="pixelated-icon">
+                     <span style="color: #FFEB3B;">💛</span>
+                     <span style="color: #F44336;">⚡️</span>
+                   </span>
+                </div>
                 <div class="bg-white/80 backdrop-blur-sm rounded-xl p-2 border-2 border-zinc-600 w-44 shadow-sm">
                     <div class="flex justify-between font-bold text-sm text-zinc-800">
                         <span>피카츄</span>
@@ -54,10 +70,12 @@
             </div>
         </div>
 
+        <!-- 배틀 텍스트 로그 창 -->
         <div class="bg-zinc-900 p-4 h-24 text-green-400 text-sm overflow-y-auto font-mono border-b-4 border-zinc-700" id="battle-log">
             야생의 파이리가 나타났다!<br>가라, 피카츄!
         </div>
 
+        <!-- 컨트롤 패널 (스킬 버튼) -->
         <div class="grid grid-cols-2 gap-2 p-4 bg-zinc-800" id="action-panel">
             <button onclick="useSkill('tackle')" class="bg-amber-500 hover:bg-amber-600 text-white font-bold py-3 px-4 rounded-xl shadow border-b-4 border-amber-700 active:border-b-0 active:mt-1 transition-all">
                 몸통박치기
