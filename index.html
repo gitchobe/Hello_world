@@ -1,172 +1,205 @@
 <!DOCTYPE html>
-<html>
+<html lang="ko">
 <head>
-  <title>코브라 게임</title>
-  <style>
-    body {
-      background-color: #333;
-      color: #fff;
-      font-family: Arial, sans-serif;
-      text-align: center;
-    }
-
-    #game-canvas {
-      background-color: #000;
-      border: 2px solid #fff;
-    }
-
-    #score {
-      font-size: 24px;
-      margin-top: 10px;
-    }
-
-    #game-over {
-      font-size: 36px;
-      color: #ff0000;
-      display: none;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>미니 포켓몬 배틀 게임</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Galada&family=Dohyeon&display=swap');
+        .font-game { font-family: 'Dohyeon', sans-serif; }
+        .hp-bar { transition: width 0.4s ease-in-out; }
+    </style>
 </head>
-<body>
-  <h1>코브라 게임</h1>
-  <canvas id="game-canvas" width="400" height="400"></canvas>
-  <p id="score">점수: 0</p>
-  <p id="game-over">게임 오버!</p>
+<body class="bg-gray-900 font-game min-h-screen flex flex-col justify-center items-center p-4 select-none">
 
-  <script>
-    // 게임 설정
-    const canvas = document.getElementById("game-canvas");
-    const ctx = canvas.getContext("2d");
-    const gridSize = 20;
-    const snakeColor = "#00ff00";
-    const foodColor = "#ff0000";
+    <div class="w-full max-w-md bg-zinc-800 border-4 border-zinc-700 rounded-3xl shadow-2xl overflow-hidden flex flex-col">
+        
+        <div class="bg-red-600 text-white text-center py-2 text-xl tracking-wider border-b-4 border-zinc-700 shadow-inner">
+            POKÉMON BATTLE
+        </div>
 
-    // 게임 상태
-    let snake = [{ x: 10, y: 10 }];
-    let food = {};
-    let direction = "right";
-    let score = 0;
-    let gameOver = false;
+        <div class="relative bg-gradient-to-b from-cyan-200 to-emerald-200 p-6 flex flex-col justify-between h-72 border-b-4 border-zinc-700">
+            
+            <div class="flex justify-between items-start">
+                <div class="bg-white/80 backdrop-blur-sm rounded-xl p-2 border-2 border-zinc-600 w-44 shadow-sm">
+                    <div class="flex justify-between font-bold text-sm text-zinc-800">
+                        <span>파이리</span>
+                        <span>Lv.5</span>
+                    </div>
+                    <div class="w-full bg-gray-300 h-3 rounded-full mt-1 overflow-hidden border border-zinc-400">
+                        <div id="enemy-hp-bar" class="hp-bar h-full bg-green-500 w-full"></div>
+                    </div>
+                    <div class="text-right text-xs text-zinc-600 font-bold mt-0.5">
+                        HP: <span id="enemy-hp">50</span>/50
+                    </div>
+                </div>
+                <div id="enemy-sprite" class="text-6xl pt-2 transition-transform duration-200">🔥</div>
+            </div>
 
-    // 게임 시작
-    function startGame() {
-      createFood();
-      document.addEventListener("keydown", changeDirection);
-      gameLoop();
-    }
+            <div class="flex justify-between items-end">
+                <div id="player-sprite" class="text-6xl pb-2 transition-transform duration-200">⚡</div>
+                <div class="bg-white/80 backdrop-blur-sm rounded-xl p-2 border-2 border-zinc-600 w-44 shadow-sm">
+                    <div class="flex justify-between font-bold text-sm text-zinc-800">
+                        <span>피카츄</span>
+                        <span>Lv.5</span>
+                    </div>
+                    <div class="w-full bg-gray-300 h-3 rounded-full mt-1 overflow-hidden border border-zinc-400">
+                        <div id="player-hp-bar" class="hp-bar h-full bg-green-500 w-full"></div>
+                    </div>
+                    <div class="text-right text-xs text-zinc-600 font-bold mt-0.5">
+                        HP: <span id="player-hp">60</span>/60
+                    </div>
+                </div>
+            </div>
+        </div>
 
-    // 게임 루프
-    function gameLoop() {
-      if (gameOver) {
-        return;
-      }
+        <div class="bg-zinc-900 p-4 h-24 text-green-400 text-sm overflow-y-auto font-mono border-b-4 border-zinc-700" id="battle-log">
+            야생의 파이리가 나타났다!<br>가라, 피카츄!
+        </div>
 
-      // 뱀 이동
-      const head = { x: snake[0].x, y: snake[0].y };
-      switch (direction) {
-        case "up":
-          head.y--;
-          break;
-        case "down":
-          head.y++;
-          break;
-        case "left":
-          head.x--;
-          break;
-        case "right":
-          head.x++;
-          break;
-      }
+        <div class="grid grid-cols-2 gap-2 p-4 bg-zinc-800" id="action-panel">
+            <button onclick="useSkill('tackle')" class="bg-amber-500 hover:bg-amber-600 text-white font-bold py-3 px-4 rounded-xl shadow border-b-4 border-amber-700 active:border-b-0 active:mt-1 transition-all">
+                몸통박치기
+            </button>
+            <button onclick="useSkill('thunder')" class="bg-yellow-400 hover:bg-yellow-500 text-zinc-900 font-bold py-3 px-4 rounded-xl shadow border-b-4 border-yellow-600 active:border-b-0 active:mt-1 transition-all">
+                10만볼트
+            </button>
+            <button onclick="useSkill('heal')" class="bg-emerald-500 hover:bg-emerald-600 text-white font-bold py-3 px-4 rounded-xl shadow border-b-4 border-emerald-700 active:border-b-0 active:mt-1 transition-all">
+                상처약 (회복)
+            </button>
+            <button onclick="resetGame()" id="reset-btn" class="bg-zinc-600 hover:bg-zinc-700 text-white font-bold py-3 px-4 rounded-xl shadow border-b-4 border-zinc-900 active:border-b-0 active:mt-1 transition-all hidden">
+                다시 하기
+            </button>
+        </div>
 
-      // 충돌 확인
-      if (head.x < 0 || head.x >= canvas.width / gridSize || head.y < 0 || head.y >= canvas.height / gridSize || checkCollision(head)) {
-        gameOver = true;
-        document.getElementById("game-over").style.display = "block";
-        return;
-      }
+    </div>
 
-      // 먹이 먹기
-      if (head.x === food.x && head.y === food.y) {
-        score++;
-        document.getElementById("score").innerText = `점수: ${score}`;
-        createFood();
-      } else {
-        snake.pop();
-      }
+    <script>
+        // 게임 상태 데이터
+        const playerMaxHp = 60;
+        const enemyMaxHp = 50;
+        let playerHp = playerMaxHp;
+        let enemyHp = enemyMaxHp;
+        let isTurnProcessing = false;
 
-      snake.unshift(head);
+        const logWindow = document.getElementById('battle-log');
 
-      // 그리기
-      draw();
-
-      setTimeout(gameLoop, 100);
-    }
-
-    // 그리기
-    function draw() {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-      // 뱀 그리기
-      for (let i = 0; i < snake.length; i++) {
-        ctx.fillStyle = snakeColor;
-        ctx.fillRect(snake[i].x * gridSize, snake[i].y * gridSize, gridSize, gridSize);
-      }
-
-      // 먹이 그리기
-      ctx.fillStyle = foodColor;
-      ctx.fillRect(food.x * gridSize, food.y * gridSize, gridSize, gridSize);
-    }
-
-    // 먹이 생성
-    function createFood() {
-      food = {
-        x: Math.floor(Math.random() * (canvas.width / gridSize)),
-        y: Math.floor(Math.random() * (canvas.height / gridSize)),
-      };
-
-      // 뱀 위에 먹이가 생성되지 않도록 확인
-      if (checkCollision(food)) {
-        createFood();
-      }
-    }
-
-    // 충돌 확인
-    function checkCollision(position) {
-      for (let i = 0; i < snake.length; i++) {
-        if (snake[i].x === position.x && snake[i].y === position.y) {
-          return true;
+        function addLog(message) {
+            logWindow.innerHTML += `<br>${message}`;
+            logWindow.scrollTop = logWindow.scrollHeight;
         }
-      }
-      return false;
-    }
 
-    // 방향 변경
-    function changeDirection(event) {
-      switch (event.keyCode) {
-        case 38: // 위
-          if (direction !== "down") {
-            direction = "up";
-          }
-          break;
-        case 40: // 아래
-          if (direction !== "up") {
-            direction = "down";
-          }
-          break;
-        case 37: // 왼쪽
-          if (direction !== "right") {
-            direction = "left";
-          }
-          break;
-        case 39: // 오른쪽
-          if (direction !== "left") {
-            direction = "right";
-          }
-          break;
-      }
-    }
+        // HP 바 색상 업데이트 기능
+        function updateHpBar(elementId, current, max) {
+            const bar = document.getElementById(`${elementId}-bar`);
+            const text = document.getElementById(elementId);
+            const percentage = Math.max(0, (current / max) * 100);
+            
+            bar.style.width = `${percentage}%`;
+            text.innerText = current;
 
-    startGame();
-  </script>
+            if (percentage > 50) {
+                bar.className = "hp-bar h-full bg-green-500";
+            } else if (percentage > 20) {
+                bar.className = "hp-bar h-full bg-yellow-500";
+            } else {
+                bar.className = "hp-bar h-full bg-red-500";
+            }
+        }
+
+        // 애니메이션 효과 효과
+        function triggerAnimation(targetId, type) {
+            const element = document.getElementById(targetId);
+            if (type === 'attack') {
+                element.classList.add(targetId === 'player-sprite' ? 'translate-x-4' : '-translate-x-4');
+                setTimeout(() => element.classList.remove('translate-x-4', '-translate-x-4'), 150);
+            } else if (type === 'damage') {
+                element.classList.add('opacity-30');
+                setTimeout(() => element.classList.remove('opacity-30'), 100);
+            }
+        }
+
+        // 플레이어 스킬 사용 함수
+        function useSkill(skillType) {
+            if (isTurnProcessing || playerHp <= 0 || enemyHp <= 0) return;
+            isTurnProcessing = true;
+
+            // 1. 플레이어 턴
+            if (skillType === 'tackle') {
+                const damage = Math.floor(Math.random() * 5) + 8; // 8~12
+                enemyHp = Math.max(0, enemyHp - damage);
+                addLog(`▶ 피카츄의 몸통박치기! 파이리에게 ${damage}의 데미지!`);
+                triggerAnimation('player-sprite', 'attack');
+                triggerAnimation('enemy-sprite', 'damage');
+            } else if (skillType === 'thunder') {
+                const isHit = Math.random() > 0.15; // 85% 확률 적중
+                if (isHit) {
+                    const damage = Math.floor(Math.random() * 8) + 12; // 12~19
+                    enemyHp = Math.max(0, enemyHp - damage);
+                    addLog(`⚡ 피카츄의 10만볼트 급소 가격! 파이리에게 ${damage}의 데미지!`);
+                    triggerAnimation('player-sprite', 'attack');
+                    triggerAnimation('enemy-sprite', 'damage');
+                } else {
+                    addLog(`❌ 피카츄의 10만볼트 공격이 빗나갔다!`);
+                }
+            } else if (skillType === 'heal') {
+                const healAmount = 20;
+                playerHp = Math.min(playerMaxHp, playerHp + healAmount);
+                addLog(`✨ 피카츄는 상처약을 사용했다! 체력을 ${healAmount} 회복.`);
+            }
+
+            updateHpBar('enemy-hp', enemyHp, enemyMaxHp);
+
+            // 적 퇴치 확인
+            if (enemyHp <= 0) {
+                setTimeout(() => {
+                    addLog(`🎉 야생의 파이리가 쓰러졌다! 승리했습니다!`);
+                    endGame();
+                }, 600);
+                return;
+            }
+
+            // 2. 적(파이리)의 반격 턴 (1초 뒤 작동)
+            setTimeout(() => {
+                if (playerHp <= 0) return;
+
+                const enemyDamage = Math.floor(Math.random() * 6) + 7; // 7~12 데미지
+                playerHp = Math.max(0, playerHp - enemyDamage);
+                
+                addLog(`💥 야생의 파이리의 불꽃세례! 피카츄에게 ${enemyDamage}의 데미지.`);
+                triggerAnimation('enemy-sprite', 'attack');
+                triggerAnimation('player-sprite', 'damage');
+                
+                updateHpBar('player-hp', playerHp, playerMaxHp);
+
+                // 플레이어 패배 확인
+                if (playerHp <= 0) {
+                    setTimeout(() => {
+                        addLog(`💀 피카츄가 눈앞이 캄캄해졌다... 패배했습니다.`);
+                        endGame();
+                    }, 600);
+                } else {
+                    isTurnProcessing = false; // 다음 턴 진행 가능
+                }
+            }, 1000);
+        }
+
+        function endGame() {
+            document.getElementById('reset-btn').classList.remove('hidden');
+        }
+
+        function resetGame() {
+            playerHp = playerMaxHp;
+            enemyHp = enemyMaxHp;
+            isTurnProcessing = false;
+            
+            updateHpBar('player-hp', playerHp, playerMaxHp);
+            updateHpBar('enemy-hp', enemyHp, enemyMaxHp);
+            
+            logWindow.innerHTML = "새로운 야생의 파이리가 나타났다!<br>가라, 피카츄!";
+            document.getElementById('reset-btn').classList.add('hidden');
+        }
+    </script>
 </body>
 </html>
